@@ -1,0 +1,21 @@
+from kubernetes import client, config
+
+# Configure the client to use the cluster's config file
+config.load_incluster_config()
+
+# Create a NetworkPolicyV1Api object
+net_policy_api = client.NetworkingV1Api()
+
+# Get a list of all namespaces in the cluster
+namespaces = client.CoreV1Api().list_namespace().items
+
+# Iterate over each namespace
+for namespace in namespaces:
+    # Get a list of all network policies in the namespace
+    policies = net_policy_api.list_namespaced_network_policy(namespace.metadata.name).items
+    
+    # If there are no policies, the cluster is not secure
+    if not policies:
+        print(f"No network policies found in namespace {namespace.metadata.name}")
+    else:
+        print(f"Network policies found in namespace {namespace.metadata.name}")
