@@ -1,0 +1,14 @@
+import docker
+
+def check_container_privileges(container_id):
+    client = docker.from_env()
+    container = client.containers.get(container_id)
+    return container.attrs['HostConfig']['Privileged']
+
+if __name__ == "__main__":
+    container_id = input("Enter the container ID: ")
+    privileged = check_container_privileges(container_id)
+    if privileged:
+        print("Container is running with privileged mode enabled.")
+    else:
+        print("Container is not running with privileged mode enabled.")
