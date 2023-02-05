@@ -1,0 +1,26 @@
+import os
+
+def check_security(path):
+    security_issues = []
+    # Check if firewall is enabled
+    firewall = os.popen("ufw status").read()
+    if "inactive" in firewall:
+        security_issues.append("Firewall is not enabled.")
+    # Check if SELinux is enabled
+    selinux = os.popen("getenforce").read()
+    if "Disabled" in selinux:
+        security_issues.append("SELinux is not enabled.")
+    # Check for updates
+    updates = os.popen("apt-get upgrade -s").read()
+    if "0 upgraded" in updates:
+        security_issues.append("System is not up-to-date.")
+    return security_issues
+
+if __name__ == "__main__":
+    security_issues = check_security("/etc/kubernetes")
+    if security_issues:
+        print("Security issues found:")
+        for issue in security_issues:
+            print(issue)
+    else:
+        print("No security issues found.")
