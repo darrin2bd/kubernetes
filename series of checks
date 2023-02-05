@@ -1,0 +1,30 @@
+import os
+
+def check_application_security(path):
+    security_issues = []
+    # Check for outdated packages
+    packages = os.popen("pip freeze").read()
+    for package in packages.split("\n"):
+        outdated = os.popen(f"pip show {package} | grep 'Version:'").read()
+        if "Not installed" in outdated:
+            security_issues.append(f"{package} is not installed.")
+        else:
+            version = outdated.strip().split(" ")[-1]
+            latest = os.popen(f"pip show {package} | grep 'Latest:'").read().strip().split(" ")[-1]
+            if version != latest:
+                security_issues.append(f"{package} is outdated.")
+    # Check for unnecessary services
+    services = os.popen("systemctl list-units --type=service").read()
+    for service in services.split("\n"):
+        if "enabled" in service and "running" not in service:
+            security_issues.append(f"{service.split()[0]} is enabled but not running.")
+    return security_issues
+
+if __name__ == "__main__":
+    security_issues = check_application_security("/app")
+    if security_issues:
+        print("Security issues found:")
+        for issue in security_issues:
+            print(issue)
+    else:
+        print("No security issues found.")
