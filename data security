@@ -1,0 +1,28 @@
+import subprocess
+
+def check_data_security(namespace):
+    security_issues = []
+    # Check if secrets are encrypted
+    secrets = subprocess.run(["kubectl", "get", "secrets", "-n", namespace], capture_output=True, text=True)
+    for secret in secrets.stdout.split("\n")[1:]:
+        if secret:
+            type = subprocess.run(["kubectl", "get", "secret", secret.split()[0], "-n", namespace, "-o", "json"], capture_output=True, text=True)
+            if "kubernetes.io/tls" not in type.stdout:
+                security_issues.append(f"{secret.split()[0]} is not encrypted.")
+    # Check if configMaps are encrypted
+    configMaps = subprocess.run(["kubectl", "get", "configMaps", "-n", namespace], capture_output=True, text=True)
+    for configMap in configMaps.stdout.split("\n")[1:]:
+        if configMap:
+            type = subprocess.run(["kubectl", "get", "configMap", configMap.split()[0], "-n", namespace, "-o", "json"], capture_output=True, text=True)
+            if "kubernetes.io/tls" not in type.stdout:
+                security_issues.append(f"{configMap.split()[0]} is not encrypted.")
+    return security_issues
+
+if __name__ == "__main__":
+    security_issues = check_data_security("default")
+    if security_issues:
+        print("Security issues found:")
+        for issue in security_issues:
+            print(issue)
+    else:
+        print("No security issues found.")
